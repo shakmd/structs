@@ -83,6 +83,55 @@ func TestMap(t *testing.T) {
 
 }
 
+func TestJoin(t *testing.T) {
+	var T1 = struct {
+		A string
+		B int
+		C bool
+	}{
+		A: "a-value",
+		B: 2,
+		C: true,
+	}
+
+	var T2 = struct {
+		A string
+		D int
+		E bool
+	}{
+		A: "a-value",
+		D: 20,
+		E: false,
+	}
+
+	a := Join(T1, T2)
+
+	if typ := reflect.TypeOf(a).Kind(); typ != reflect.Map {
+		t.Errorf("Map should return a map type, got: %v", typ)
+	}
+
+	// we have three fields
+	if len(a) != 5 {
+		t.Errorf("Map should return a map of len 5, got: %d", len(a))
+	}
+
+	inMap := func(val interface{}) bool {
+		for _, v := range a {
+			if reflect.DeepEqual(v, val) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, val := range []interface{}{"a-value", 2, true, 20, false} {
+		if !inMap(val) {
+			t.Errorf("Map should have the value %v", val)
+		}
+	}
+}
+
 func TestMap_Tag(t *testing.T) {
 	var T = struct {
 		A string `structs:"x"`

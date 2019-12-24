@@ -84,6 +84,37 @@ func (s *Struct) Map() map[string]interface{} {
 	return out
 }
 
+// Join return a map[string]interface{} after joining two structs
+// All the rules and restriction specified in the Map() method applies here too
+// The resultant map will have keys corresponding to each attribute of both the structs
+// If any key is common across both the structs, value for that particular key will be
+// chosen from the struct which invoked this method
+func (s *Struct) Join(s2 interface{}) map[string]interface{} {
+	//Prepare map of first struct
+	out1 := make(map[string]interface{})
+	s.FillMap(out1)
+
+	//Prepare map of second struct
+	out2 := New(s2).Map()
+
+	outRes := make(map[string]interface{})
+
+	//Copy over the first map into final map
+	for key, value := range out1 {
+		outRes[key] = value
+	}
+
+	//If something is not present in the first map, it should get added to final map
+	for key, value2 := range out2 {
+		_, ok := out1[key]
+		if ok {
+			continue
+		}
+		outRes[key] = value2
+	}
+	return outRes
+}
+
 // FillMap is the same as Map. Instead of returning the output, it fills the
 // given map.
 func (s *Struct) FillMap(out map[string]interface{}) {
@@ -444,6 +475,14 @@ func strctVal(s interface{}) reflect.Value {
 // refer to Struct types Map() method. It panics if s's kind is not struct.
 func Map(s interface{}) map[string]interface{} {
 	return New(s).Map()
+}
+
+// Join return a map[string]interface{} after joining two structs
+// The resultant map will have keys corresponding to each attribute of both the structs
+// If any key is common across both the structs, value for that particular key will be
+// chosen from the first struct passed to the method
+func Join(s1 interface{}, s2 interface{}) map[string]interface{} {
+	return New(s1).Join(s2)
 }
 
 // FillMap is the same as Map. Instead of returning the output, it fills the
